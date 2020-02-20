@@ -73,6 +73,22 @@ try {
 }
 });
 
+app.get('/yelp', async(req, res, next) => {
+    
+    try {
+        const yelpInfo = await request
+            .get(`https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=${lat}&longitude=${lng}`)
+            //https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=37.786882&longitude=-122.399972
+            .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`);
+console.log(yelpInfo)
+        res.json(yelpInfo);
+    } catch (err) {
+        next(err);
+    }
+});
+
+
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}!`));
 
