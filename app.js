@@ -52,7 +52,7 @@ app.get('/location', async(req, res, next) => {
 const getWeatherData = async(lat, lng) => {
 
     const weather = await request.get(`https://api.darksky.net/forecast/${process.env.WEATHER_KEY}/${lat},${lng}`);
-    console.log(weather.daily)
+    
     return weather.body.daily.data.map(forecast => {
         return {
 
@@ -78,14 +78,48 @@ app.get('/yelp', async(req, res, next) => {
     try {
         const yelpInfo = await request
             .get(`https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=${lat}&longitude=${lng}`)
-            //https://api.yelp.com/v3/businesses/search?term=restaurants&latitude=37.786882&longitude=-122.399972
             .set('Authorization', `Bearer ${process.env.YELP_API_KEY}`);
-console.log(yelpInfo)
-        res.json(yelpInfo);
-    } catch (err) {
+
+            const mungedData = yelpInfo.body.businesses.map(business => {
+                return {
+        
+                    name: business.name,
+                    image_url: business.image_url,
+                    price: business.price,
+                    rating: business.rating,
+                    url: business.url,
+                }});       
+
+    res.json(mungedData);
+
+    }
+     catch (err) {
         next(err);
     }
 });
+
+app.get('/eventful', async(req, res, next) =>{
+    try{
+        const eventfulInfo = await request.get(`http://api.eventful.com/json/events/search?app_key=${process.env.EVENTFUL_API_KEY}&where=${lat},${lng}&within=25&page_size=20&page_number=1`);
+
+        const mungedEventData = eventfulInfo.text.map(event => {
+            return {
+    
+                url: event.url,
+                title: event.title,
+                date: event.start_time,
+                summary: event.description
+
+            }}); 
+//converts mungedYelpData from our API call to a string for use in our URL
+    res.json(mungedEventData);
+
+}
+catch (err) {
+   next(err);
+}
+});
+
 
 
 
